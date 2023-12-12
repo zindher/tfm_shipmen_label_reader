@@ -15,7 +15,6 @@ dependencies:
   dropdown_search: ^5.0.6
   http: 1.1.2
   fluttertoast: ^8.2.2
-  flutter_svprogresshud: ^1.0.0
   decimal: ^2.3.3
 
 dev_dependencies:

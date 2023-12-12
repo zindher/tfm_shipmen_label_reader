@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bottom_bar_with_sheet/bottom_bar_with_sheet.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svprogresshud/flutter_svprogresshud.dart';
+//import 'package:flutter_svprogresshud/flutter_svprogresshud.dart';
 import 'Helpers/alert.dart';
 import 'Helpers/currentUser.dart';
 import 'Pages/master.dart';
@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    SVProgressHUD.setDefaultMaskType(SVProgressHUDMaskType.clear);
+    //SVProgressHUD.setDefaultMaskType(SVProgressHUDMaskType.clear);
     super.initState();
   }
 
