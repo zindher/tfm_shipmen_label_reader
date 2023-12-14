@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../Helpers/alert.dart';
+import '../Helpers/ProgressBar.dart';
 import '../Models/orderDetailModel.dart';
 import '../Models/orderModel.dart';
 import '../Services/ordersService.dart';
@@ -21,23 +21,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     var o = await OrdersService.getOrderDetailsByOrder(widget.order);
     if (filter.toString().isNotEmpty) {
       response = o
-          .where((e) => (e.partNumber
-                  .toUpperCase()
-                  .contains(filter.toString().toUpperCase()) ||
-              e.quantity
-                  .toString()
-                  .toUpperCase()
-                  .contains(filter.toString().toUpperCase()) ||
-              e.serial
-                  .toUpperCase()
-                  .contains(filter.toString().toUpperCase()) ||
-              e.master
-                  .toUpperCase()
-                  .contains(filter.toString().toUpperCase()) ||
-              e.date
-                  .toString()
-                  .toUpperCase()
-                  .contains(filter.toString().toUpperCase())))
+          .where((e) => (e.partNumber.toUpperCase().contains(filter.toString().toUpperCase()) ||
+              e.quantity.toString().toUpperCase().contains(filter.toString().toUpperCase()) ||
+              e.serial.toUpperCase().contains(filter.toString().toUpperCase()) ||
+              e.master.toUpperCase().contains(filter.toString().toUpperCase()) ||
+              e.date.toString().toUpperCase().contains(filter.toString().toUpperCase())))
           .toList();
     } else {
       response = o;
@@ -47,7 +35,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       _orderDetails = response;
     });
   }
-
 
   @override
   void initState() {
@@ -74,7 +61,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               children: [
                 TextFormField(
                   onChanged: (text) {
+                    ProgressBar.instance.show(context);
                     getOrderDetails(text);
+                    ProgressBar.instance.hide();
                   },
                   decoration: const InputDecoration(
                     border: UnderlineInputBorder(),
@@ -88,23 +77,17 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         ListTile(
-                            title: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(''),
-                                  Text(
-                                      '# Parte: ${_orderDetails[x].partNumber}'),
-                                ]),
-                            subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(''),
-                                  Text(
-                                      'Cantidad: ${_orderDetails[x].quantity}'),
-                                  Text('Serial: ${_orderDetails[x].serial}'),
-                                  Text('Fecha: ${_orderDetails[x].date}'),
-                                  Text(''),
-                                ]))
+                            title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text(''),
+                              Text('# Parte: ${_orderDetails[x].partNumber}'),
+                            ]),
+                            subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text(''),
+                              Text('Cantidad: ${_orderDetails[x].quantity}'),
+                              Text('Serial: ${_orderDetails[x].serial}'),
+                              Text('Fecha: ${_orderDetails[x].date}'),
+                              Text(''),
+                            ]))
                       ],
                     ),
                   ),

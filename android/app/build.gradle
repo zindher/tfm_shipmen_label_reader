@@ -29,7 +29,6 @@ android {
     namespace "com.tfm.tfm_shipmen_label_reader"
     compileSdkVersion flutter.compileSdkVersion
 
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8

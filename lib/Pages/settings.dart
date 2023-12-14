@@ -31,9 +31,7 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
-              children: [
-                Text('Settings')
-              ],
+              children: [Text('Settings')],
             ),
           ),
         ),

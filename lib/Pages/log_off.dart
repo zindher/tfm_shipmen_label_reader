@@ -1,5 +1,6 @@
 //import 'package:flutter_svprogresshud/flutter_svprogresshud.dart';
 import 'package:flutter/material.dart';
+import '../Helpers/ProgressBar.dart';
 import '../Helpers/currentUser.dart';
 import '../main.dart';
 
@@ -34,20 +35,18 @@ class _LogOffPageState extends State<LogOffPage> {
               mainAxisSize: MainAxisSize.max,
               children: [
                 ElevatedButton(
-                  style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Color(0xffB40000))
-                  ),
+                  style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Color(0xffB40000))),
                   onPressed: () async => {
-                    //SVProgressHUD.show(),
+                    ProgressBar.instance.show(context),
                     await CurrentUser.instance.userLogoff(),
-                    Navigator.pushReplacement(context,
-                        MaterialPageRoute(builder: (BuildContext context) {
+                    ProgressBar.instance.hide(),
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) {
                       return const MyApp();
                     })),
                     //SVProgressHUD.dismiss(),
                   },
-                  child: const Text(
-                      '                                        Salir                                       ', style: TextStyle(fontSize: 15, color: Colors.white)),
+                  child:
+                      const Text('                                        Salir                                       ', style: TextStyle(fontSize: 15, color: Colors.white)),
                 ),
               ],
             ),

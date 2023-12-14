@@ -7,13 +7,7 @@ import 'package:http/http.dart' as http;
 
 class UserService {
   static Future<UserModel> userLogin(String userName, String password) async {
-    UserModel user = UserModel(
-        idUser: 0,
-        userName: "",
-        name: "",
-        lastName: "",
-        password: "",
-        isActive: false);
+    UserModel user = UserModel(idUser: 0, userName: "", name: "", lastName: "", password: "", isActive: false);
     try {
       String url = "${AppConfig.host}/User/UserLogin";
 
@@ -26,14 +20,15 @@ class UserService {
             'Password': password,
           }));
       var responseData = json.decode(response.body);
-      user = UserModel(
-          idUser: responseData["idUser"] ?? 0,
-          userName: responseData["userName"],
-          name: responseData["name"],
-          lastName: responseData["lastName"],
-          password: responseData["password"],
-          isActive: responseData["isActive"]);
-
+      if (response.statusCode == 200) {
+        user = UserModel(
+            idUser: responseData["idUser"] ?? 0,
+            userName: responseData["userName"],
+            name: responseData["name"],
+            lastName: responseData["lastName"],
+            password: responseData["password"],
+            isActive: responseData["isActive"]);
+      }
     } on SocketException {
       AlertHelper.showErrorToast("Error de conexión!!");
     } on HttpException {

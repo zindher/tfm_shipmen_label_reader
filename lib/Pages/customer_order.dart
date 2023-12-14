@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import '../Helpers/ProgressBar.dart';
 import '../Models/orderModel.dart';
 import '../Services/ordersService.dart';
 
 class CustomerOrderPage extends StatefulWidget {
   final Order order;
   final Function callback;
+
   const CustomerOrderPage({super.key, required this.order, required this.callback});
 
   @override
@@ -39,11 +41,9 @@ class _CustomerOrderPageState extends State<CustomerOrderPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       ListTile(
-                          title: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                            Text("Cliente:  ${widget.order.customerName}"),
-                          ]))
+                          title: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                        Text("Cliente:  ${widget.order.customerName}"),
+                      ]))
                     ],
                   ),
                 ),
@@ -52,17 +52,13 @@ class _CustomerOrderPageState extends State<CustomerOrderPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       ListTile(
-                          title: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Orden:  ${widget.order.id}"),
-                              ]),
-                          subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Modificado por: ${widget.order.lastModifiedBy}'),
-                                Text('Estado: ${widget.order.status}'),
-                              ]))
+                          title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text("Orden:  ${widget.order.id}"),
+                          ]),
+                          subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text('Modificado por: ${widget.order.lastModifiedBy}'),
+                            Text('Estado: ${widget.order.status}'),
+                          ]))
                     ],
                   ),
                 ),
@@ -82,18 +78,21 @@ class _CustomerOrderPageState extends State<CustomerOrderPage> {
                             onTap: () {
                               widget.callback(4, widget.order, 5);
                             },
-                            child: Image.asset('assets/images/List.png',
-                                width: 120),
+                            child: Image.asset('assets/images/List.png', width: 120),
                           ),
                           const Text(''),
                           InkWell(
                             radius: 1000,
                             onTap: () async {
+                              ProgressBar.instance.show(context);
                               await OrdersService.startScan(widget.order.id);
+                              ProgressBar.instance.hide();
                               widget.callback(6, widget.order, 0);
                             },
-                            child: Image.asset('assets/images/Scan.png',
-                                width: 120, ),
+                            child: Image.asset(
+                              'assets/images/Scan.png',
+                              width: 120,
+                            ),
                           ),
                           const Text(''),
                         ],
@@ -110,16 +109,14 @@ class _CustomerOrderPageState extends State<CustomerOrderPage> {
                             onTap: () {
                               widget.callback(7, widget.order, 0);
                             },
-                            child: Image.asset('assets/images/Sync.png',
-                                width: 120),
+                            child: Image.asset('assets/images/Sync.png', width: 120),
                           ),
                           InkWell(
                             radius: 1000,
                             onTap: () {
                               widget.callback(2, "", 0);
                             },
-                            child: Image.asset('assets/images/Close.png',
-                                width: 120),
+                            child: Image.asset('assets/images/Close.png', width: 120),
                           ),
                           const Text(''),
                         ],

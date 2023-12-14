@@ -1,5 +1,3 @@
-//import 'package:flutter_svprogresshud/flutter_svprogresshud.dart';
-
 import '../Models/UserModel.dart';
 import '../Services/userService.dart';
 
@@ -18,13 +16,10 @@ class CurrentUser {
       isActive: false);
 
   Future<void> userLogin(String userName, String password) async {
-    //SVProgressHUD.show();
     user = await UserService.userLogin(userName, password);
-    //SVProgressHUD.dismiss();
   }
 
   Future<void> userLogoff() async {
-    //SVProgressHUD.show();
     user = UserModel(
         idUser: 0,
         userName: "",
@@ -32,6 +27,5 @@ class CurrentUser {
         lastName: "",
         password: "",
         isActive: false);
-    //SVProgressHUD.dismiss();
   }
 }

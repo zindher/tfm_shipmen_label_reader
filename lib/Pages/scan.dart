@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-//import 'package:flutter_svprogresshud/flutter_svprogresshud.dart';
 import '../Models/orderModel.dart';
 import '../Services/ordersService.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -22,18 +21,17 @@ class _ScanPageState extends State<ScanPage> {
   }
 
   Future<List<Order>> getOrders(filter) async {
-    //SVProgressHUD.show();
-
     List<Order> response = [];
     var o = await OrdersService.getOrders();
     if (filter.toString().isNotEmpty) {
-      response =
-          o.where((e) => (e.statusId == null || e.statusId == 1) && (e.id.toUpperCase().contains(filter.toString().toUpperCase()) || e.customerName.toUpperCase().contains(filter.toString().toUpperCase()))).toList();
+      response = o
+          .where((e) =>
+              (e.statusId == null || e.statusId == 1) &&
+              (e.id.toUpperCase().contains(filter.toString().toUpperCase()) || e.customerName.toUpperCase().contains(filter.toString().toUpperCase())))
+          .toList();
     } else {
       response = o.where((e) => e.statusId == null || e.statusId == 1).toList();
     }
-
-    //SVProgressHUD.dismiss();
     return response;
   }
 

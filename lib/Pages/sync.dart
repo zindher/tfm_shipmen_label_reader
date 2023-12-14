@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../Helpers/ProgressBar.dart';
 import '../Helpers/alert.dart';
 import '../Models/orderModel.dart';
 import '../Models/responseMessageModel.dart';
@@ -45,19 +46,15 @@ class _SyncPageState extends State<SyncPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       ListTile(
-                          title: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(''),
-                                Text("Pedido:  ${widget.order.id}"),
-                              ]),
-                          subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(''),
-                                Text('Cliente: ${widget.order.customerName}'),
-                                Text(''),
-                              ]))
+                          title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(''),
+                            Text("Pedido:  ${widget.order.id}"),
+                          ]),
+                          subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(''),
+                            Text('Cliente: ${widget.order.customerName}'),
+                            Text(''),
+                          ]))
                     ],
                   ),
                 ),
@@ -94,20 +91,21 @@ class _SyncPageState extends State<SyncPage> {
                 Text(""),
                 Text(""),
                 ElevatedButton(
-                  style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Color(0xff052289))
-                  ),
+                  style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Color(0xff052289))),
                   onPressed: () async => {
+                    ProgressBar.instance.show(context),
                     response = await OrdersService.syncOrder(await OrdersService.startScan(widget.order.id)),
-                    if (!response.hasError) {AlertHelper.showSuccessToast(response.message), _optionsNumber = 2} else {AlertHelper.showErrorToast(response.message), _optionsNumber = 3},
-                    setState(() {})
+                    if (!response.hasError)
+                      {AlertHelper.showSuccessToast(response.message), _optionsNumber = 2}
+                    else
+                      {AlertHelper.showErrorToast(response.message), _optionsNumber = 3},
+                    setState(() {}),
+                    ProgressBar.instance.hide()
                   },
                   child: const Text(' SINCRONIZAR ', style: TextStyle(fontSize: 15, color: Colors.white)),
                 ),
                 ElevatedButton(
-                    style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(Color(0xffB40000))
-                    ),
+                    style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Color(0xffB40000))),
                     onPressed: () async => {widget.callback(5, widget.order, 2)},
                     child: const Text('    CANCELAR    ', style: TextStyle(fontSize: 15, color: Colors.white))),
               ],

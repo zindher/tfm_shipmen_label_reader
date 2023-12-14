@@ -1,3 +1,4 @@
+import '../Helpers/ProgressBar.dart';
 import '../Models/orderModel.dart';
 import 'package:flutter/material.dart';
 import '../Services/ordersService.dart';
@@ -44,8 +45,8 @@ class _OrderInquiryPageState extends State<OrderInquiryPage> {
 
   @override
   void initState() {
-    getOrders("");
     super.initState();
+    getOrders("");
   }
 
   @override
@@ -67,7 +68,9 @@ class _OrderInquiryPageState extends State<OrderInquiryPage> {
               children: [
                 TextFormField(
                   onChanged: (text) {
+                    ProgressBar.instance.show(context);
                     getOrders(text);
+                    ProgressBar.instance.hide();
                   },
                   decoration: const InputDecoration(
                     border: UnderlineInputBorder(),
@@ -90,7 +93,7 @@ class _OrderInquiryPageState extends State<OrderInquiryPage> {
                                   '${_orders[x].status}',
                                   style: TextStyle(
                                     color: _orders[x].statusId == null
-                                        ? Colors.yellow
+                                        ? Colors.amber
                                         : _orders[x].statusId == 0
                                             ? Colors.red
                                             : _orders[x].statusId == 1
@@ -125,7 +128,6 @@ class _OrderInquiryPageState extends State<OrderInquiryPage> {
                             TextButton(
                               child: const Text('VER DTALLES'),
                               onPressed: () => {
-                                //Navigator.pushNamed(context, '/scan')
                                 widget.callback(4, _orders[x], 0),
                               },
                             ),

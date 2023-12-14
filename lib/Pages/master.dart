@@ -150,10 +150,8 @@ class _MasterPageState extends State<MasterPage> {
                   }),
             ),
             centerTitle: true,
-            toolbarHeight: 80,
             title: Column(
               children: [
-                Text(''),
                 FittedBox(
                   fit: BoxFit.fitWidth,
                   alignment: Alignment.topLeft,
