@@ -83,7 +83,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                             ]),
                             subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                               Text(''),
-                              Text('Cantidad: ${_orderDetails[x].quantity}'),
+                              Text('Cantidad: ${_orderDetails[x].qty}'),
                               Text('Serial: ${_orderDetails[x].serial}'),
                               Text('Fecha: ${_orderDetails[x].date}'),
                               Text(''),

@@ -20,19 +20,10 @@ class _OrderInquiryPageState extends State<OrderInquiryPage> {
     var o = await OrdersService.getOrders();
     if (filter.toString().isNotEmpty) {
       response = o
-          .where((e) => (e.id
-                  .toUpperCase()
-                  .contains(filter.toString().toUpperCase()) ||
-              e.customerName
-                  .toUpperCase()
-                  .contains(filter.toString().toUpperCase()) ||
-              e.status
-                  .toUpperCase()
-                  .contains(filter.toString().toUpperCase()) ||
-              e.lastScanDate
-                  .toString()
-                  .toUpperCase()
-                  .contains(filter.toString().toUpperCase())))
+          .where((e) => (e.id.toUpperCase().contains(filter.toString().toUpperCase()) ||
+              e.customerName.toUpperCase().contains(filter.toString().toUpperCase()) ||
+              e.status.toUpperCase().contains(filter.toString().toUpperCase()) ||
+              e.lastScanDate.toString().toUpperCase().contains(filter.toString().toUpperCase())))
           .toList();
     } else {
       response = o.where((e) => e.statusId == null || e.statusId == 1).toList();
@@ -89,8 +80,7 @@ class _OrderInquiryPageState extends State<OrderInquiryPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('Pedido: ${_orders[x].id}'),
-                              Text(
-                                  '${_orders[x].status}',
+                              Text('${_orders[x].status}',
                                   style: TextStyle(
                                     color: _orders[x].statusId == null
                                         ? Colors.amber
@@ -104,8 +94,7 @@ class _OrderInquiryPageState extends State<OrderInquiryPage> {
                                   ))
                             ],
                           ),
-                          subtitle: Text(
-                              'Fecha de captura: ${_orders[x].lastScanDate ?? ''}'),
+                          subtitle: Text('Fecha de captura: ${_orders[x].lastScanDate ?? ''}'),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -122,9 +111,9 @@ class _OrderInquiryPageState extends State<OrderInquiryPage> {
                             ),
                           ],
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
+                        Visibility(
+                          visible: _orders[x].statusId != null,
+                          child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
                             TextButton(
                               child: const Text('VER DTALLES'),
                               onPressed: () => {
@@ -132,7 +121,11 @@ class _OrderInquiryPageState extends State<OrderInquiryPage> {
                               },
                             ),
                             const SizedBox(width: 8),
-                          ],
+                          ]),
+                        ),
+                        Visibility(
+                          visible: _orders[x].statusId == null,
+                          child: Text(""),
                         ),
                       ],
                     ),

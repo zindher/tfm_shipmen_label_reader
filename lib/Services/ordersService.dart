@@ -10,6 +10,34 @@ import '../Models/orderModel.dart';
 import 'package:http/http.dart' as http;
 
 class OrdersService {
+
+  static Future<ResponseMessage> ValidatePartNumberInOrder(int idScan, String partNumber) async {
+    ResponseMessage responseMessage = ResponseMessage(hasError: true, message: "Error de conexión!!", extraData: "");
+    try {
+      String url = "${AppConfig.host}/Scan/ValidatePartNumberInOrder?idScan=${idScan.toString()}&partNumber=${partNumber}";
+      final response = await http.get(Uri.parse(url), headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      });
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = jsonDecode(response.body);
+        responseMessage = ResponseMessage(hasError: bool.parse('${responseData['hasError']}'), message: '${responseData['message']}', extraData: "");
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
+      }
+    } on SocketException {
+      AlertHelper.showErrorToast("Error de conexión!!");
+    } on HttpException {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } on FormatException {
+      AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } finally {
+      return responseMessage;
+    }
+  }
+
   static Future<List<Order>> getOrders() async {
     List<Order> orders = [];
     try {
@@ -30,6 +58,8 @@ class OrdersService {
               lastModifiedBy: singleOrder["lastModifiedBy"] ?? "");
           orders.add(order);
         }
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
       }
     } on SocketException {
       AlertHelper.showErrorToast("Error de conexión!!");
@@ -37,8 +67,64 @@ class OrdersService {
       AlertHelper.showErrorToast("Error de servidor!!");
     } on FormatException {
       AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
     } finally {
       return orders;
+    }
+  }
+
+  static Future<Order> validateAkiPart(String master) async {
+    Order order = Order();
+    try {
+      String url = "${AppConfig.host}/Scan/ValidatePartSerialAkiSeat?master=${master}";
+      final response = await http.get(Uri.parse(url), headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      });
+      Map<String, dynamic> responseData = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        final List<String>? serials = (responseData["serials"] as List)?.cast<String>();
+
+        order = Order(partNumber: responseData["partNumber"], internalPartNumber: responseData["partNumberInternal"], quantity: responseData["quantity"], serials: serials);
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
+      }
+    } on SocketException {
+      AlertHelper.showErrorToast("Error de conexión!!");
+    } on HttpException {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } on FormatException {
+      AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } finally {
+      return order;
+    }
+  }
+
+  static Future<ResponseMessage> validateAkiSerial(String serial, String partNumber) async {
+    ResponseMessage responseMessage = ResponseMessage(hasError: true, message: "Error de conexión!!", extraData: "");
+    try {
+      String url = "${AppConfig.host}/Scan/ValidateAkiSerial?akiSerial=${serial}&partNumber=${partNumber}";
+      final response = await http.get(Uri.parse(url), headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      });
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = jsonDecode(response.body);
+        responseMessage = ResponseMessage(hasError: bool.parse('${responseData['hasError']}'), message: '${responseData['message']}', extraData: "");
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
+      }
+    } on SocketException {
+      AlertHelper.showErrorToast("Error de conexión!!");
+    } on HttpException {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } on FormatException {
+      AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } finally {
+      return responseMessage;
     }
   }
 
@@ -62,9 +148,12 @@ class OrdersService {
               serial: singleOrder["serial"],
               master: singleOrder["master"],
               date: DateTime.parse(singleOrder["date"] ?? DateTime.now().toString()),
-              akiSerial: "");
+              akiSerial: "",
+              qty: singleOrder["quantity"].toString());
           orderDetails.add(orderDetail);
         }
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
       }
     } on SocketException {
       AlertHelper.showErrorToast("Error de conexión!!");
@@ -72,6 +161,8 @@ class OrdersService {
       AlertHelper.showErrorToast("Error de servidor!!");
     } on FormatException {
       AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
     } finally {
       return orderDetails;
     }
@@ -99,6 +190,8 @@ class OrdersService {
       if (response.statusCode == 200) {
         Map<String, dynamic> responseData = jsonDecode(response.body);
         responseMessage = ResponseMessage(hasError: bool.parse('${responseData['hasError']}'), message: '${responseData['message']}', extraData: "");
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
       }
     } on SocketException {
       AlertHelper.showErrorToast("Error de conexión!!");
@@ -106,6 +199,8 @@ class OrdersService {
       AlertHelper.showErrorToast("Error de servidor!!");
     } on FormatException {
       AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
     } finally {
       return responseMessage;
     }
@@ -126,6 +221,8 @@ class OrdersService {
       if (response.statusCode == 200) {
         Map<String, dynamic> responseData = jsonDecode(response.body);
         responseMessage = ResponseMessage(hasError: bool.parse('${responseData['hasError']}'), message: '${responseData['message']}', extraData: "");
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
       }
     } on SocketException {
       AlertHelper.showErrorToast("Error de conexión!!");
@@ -133,6 +230,8 @@ class OrdersService {
       AlertHelper.showErrorToast("Error de servidor!!");
     } on FormatException {
       AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
     } finally {
       return responseMessage;
     }
@@ -150,6 +249,8 @@ class OrdersService {
 
       if (response.statusCode == 200) {
         responseId = int.parse(response.body);
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
       }
     } on SocketException {
       AlertHelper.showErrorToast("Error de conexión!!");
@@ -157,6 +258,8 @@ class OrdersService {
       AlertHelper.showErrorToast("Error de servidor!!");
     } on FormatException {
       AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
     } finally {
       return responseId;
     }

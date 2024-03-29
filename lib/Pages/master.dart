@@ -127,6 +127,7 @@ class _MasterPageState extends State<MasterPage> {
 
     return Scaffold(
         appBar: AppBar(
+            centerTitle: true,
             leading: Visibility(
               visible: _isBackButtonVisible,
               child: IconButton(
@@ -149,20 +150,10 @@ class _MasterPageState extends State<MasterPage> {
                     }
                   }),
             ),
-            centerTitle: true,
             title: Column(
-              children: [
-                FittedBox(
-                  fit: BoxFit.fitWidth,
-                  alignment: Alignment.topLeft,
-                  child: Text(_title, style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
-                ),
-                FittedBox(
-                  fit: BoxFit.fitWidth,
-                  child: Text(
-                      "${CurrentUser.instance.user.name} ${CurrentUser.instance.user.lastName}",
-                      style: const TextStyle(fontSize: 16), selectionColor: Color(0xff595959)),
-                )
+              children: <Widget>[
+                Text(_title, style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
+                Text("${CurrentUser.instance.user.name} ${CurrentUser.instance.user.lastName}", style: const TextStyle(fontSize: 16), selectionColor: Color(0xff595959))
               ],
             )),
         body: body,

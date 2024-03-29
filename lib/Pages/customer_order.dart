@@ -73,14 +73,21 @@ class _CustomerOrderPageState extends State<CustomerOrderPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(''),
-                          InkWell(
-                            radius: 1000,
-                            onTap: () {
-                              widget.callback(4, widget.order, 5);
-                            },
-                            child: Image.asset('assets/images/List.png', width: 120),
+                          Column(
+                            children: [
+                              InkWell(
+                                radius: 1000,
+                                onTap: () {
+                                  widget.callback(4, widget.order, 5);
+                                },
+                                child: Image.asset('assets/images/List.png', width: 120),
+                              ),
+                              const Text('CONSULTA', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
+                            ],
                           ),
                           const Text(''),
+                          Column(
+                            children: [
                           InkWell(
                             radius: 1000,
                             onTap: () async {
@@ -94,6 +101,9 @@ class _CustomerOrderPageState extends State<CustomerOrderPage> {
                               width: 120,
                             ),
                           ),
+                          const Text('ESCANEO', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
+                            ],
+                          ),
                           const Text(''),
                         ],
                       ),
@@ -104,6 +114,8 @@ class _CustomerOrderPageState extends State<CustomerOrderPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(''),
+                          Column(
+                            children: [
                           InkWell(
                             radius: 1000,
                             onTap: () {
@@ -111,6 +123,11 @@ class _CustomerOrderPageState extends State<CustomerOrderPage> {
                             },
                             child: Image.asset('assets/images/Sync.png', width: 120),
                           ),
+                          const Text('SINCRONIZACIÓN', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
+                            ],
+                          ),
+                              Column(
+                                children: [
                           InkWell(
                             radius: 1000,
                             onTap: () {
@@ -118,6 +135,9 @@ class _CustomerOrderPageState extends State<CustomerOrderPage> {
                             },
                             child: Image.asset('assets/images/Close.png', width: 120),
                           ),
+                          const Text('SALIR DEL PEDIDO', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
+                                ],
+                              ),
                           const Text(''),
                         ],
                       ),

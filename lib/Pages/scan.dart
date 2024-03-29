@@ -35,7 +35,7 @@ class _ScanPageState extends State<ScanPage> {
     return response;
   }
 
-  Widget _customPopupItemBuilderExample2(BuildContext context, Order item, bool isSelected) {
+  Widget _customPopupItemBuilder(BuildContext context, Order item, bool isSelected) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: !isSelected
@@ -67,21 +67,11 @@ class _ScanPageState extends State<ScanPage> {
       appBar: null,
       body: Padding(
         padding: const EdgeInsets.all(0.0),
-        child: Center(
           child: SingleChildScrollView(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               mainAxisSize: MainAxisSize.max,
               children: [
-                const Column(children: <Widget>[
-                  Text('Escanea tu pedido'),
-                  Text(''),
-                ]),
-                Image.asset(
-                  'assets/images/BarCodeScanner.png',
-                  width: 200,
-                ),
-                Text(''),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
@@ -89,19 +79,23 @@ class _ScanPageState extends State<ScanPage> {
                     Expanded(
                       flex: 6,
                       child: DropdownSearch<Order>(
-                          asyncItems: (String? filter) => getOrders(filter),
+                          asyncItems: (String? filter) => getOrders(filter) ,
                           onChanged: (Order? value) {
                             setState(() {
                               widget.callback(5, value, 0);
                             });
                           },
                           popupProps: PopupProps.bottomSheet(
+
+                            fit: FlexFit.tight,
                             showSelectedItems: true,
                             isFilterOnline: true,
-                            itemBuilder: _customPopupItemBuilderExample2,
+                            itemBuilder: _customPopupItemBuilder,
                             showSearchBox: true,
+
                             searchFieldProps: TextFieldProps(
                               controller: _userEditTextController,
+                              autofocus: true,
                               decoration: InputDecoration(
                                 suffixIcon: IconButton(
                                   icon: const Icon(Icons.clear),
@@ -115,9 +109,7 @@ class _ScanPageState extends State<ScanPage> {
                           compareFn: (item, selectedItem) => item.id == selectedItem.id,
                           dropdownDecoratorProps: DropDownDecoratorProps(
                             dropdownSearchDecoration: InputDecoration(
-                              label: Text('Selecciona Orden', style: TextStyle(fontSize: 18, color: Colors.white)),
-                              filled: true,
-                              fillColor: Color(0xff01136D),
+                              label: Text('Selecciona Orden'),
                             ),
                           )),
                     ),
@@ -127,7 +119,6 @@ class _ScanPageState extends State<ScanPage> {
               ],
             ),
           ),
-        ),
       ),
     );
   }

@@ -8,6 +8,7 @@ class OrderDetail {
   final String master;
   final DateTime? date;
   final String akiSerial;
+  final String qty;
 
   OrderDetail({
     required this.id,
@@ -16,6 +17,7 @@ class OrderDetail {
     required this.serial,
     required this.master,
     required this.date,
-    required this.akiSerial
+    required this.akiSerial,
+    required this.qty
   });
 }

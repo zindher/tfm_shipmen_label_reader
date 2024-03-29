@@ -35,7 +35,11 @@ class UserService {
       AlertHelper.showErrorToast("Error de servidor!!");
     } on FormatException {
       AlertHelper.showErrorToast("Error en el formato de salida!!");
-    } finally {
+    }
+    catch(e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    }
+    finally {
       return user;
     }
   }

@@ -17,6 +17,7 @@ class SyncPage extends StatefulWidget {
 
 class _SyncPageState extends State<SyncPage> {
   int _optionsNumber = 1;
+  int _finish = 0;
 
   @override
   void initState() {
@@ -90,20 +91,22 @@ class _SyncPageState extends State<SyncPage> {
                     ])),
                 Text(""),
                 Text(""),
-                ElevatedButton(
-                  style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Color(0xff052289))),
-                  onPressed: () async => {
-                    ProgressBar.instance.show(context),
-                    response = await OrdersService.syncOrder(await OrdersService.startScan(widget.order.id)),
-                    if (!response.hasError)
-                      {AlertHelper.showSuccessToast(response.message), _optionsNumber = 2}
-                    else
-                      {AlertHelper.showErrorToast(response.message), _optionsNumber = 3},
-                    setState(() {}),
-                    ProgressBar.instance.hide()
-                  },
-                  child: const Text(' SINCRONIZAR ', style: TextStyle(fontSize: 15, color: Colors.white)),
-                ),
+                Visibility(
+                    visible: _finish == 0,
+                    child: ElevatedButton(
+                      style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Color(0xff052289))),
+                      onPressed: () async => {
+                        ProgressBar.instance.show(context),
+                        response = await OrdersService.syncOrder(await OrdersService.startScan(widget.order.id)),
+                        if (!response.hasError)
+                          {AlertHelper.showSuccessToast(response.message), _optionsNumber = 2, _finish = 1}
+                        else
+                          {AlertHelper.showErrorToast(response.message), _optionsNumber = 3},
+                        setState(() {}),
+                        ProgressBar.instance.hide()
+                      },
+                      child: const Text(' SINCRONIZAR ', style: TextStyle(fontSize: 15, color: Colors.white)),
+                    )),
                 ElevatedButton(
                     style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Color(0xffB40000))),
                     onPressed: () async => {widget.callback(5, widget.order, 2)},

@@ -6,15 +6,23 @@ class Order {
   final String? currentScanInternalID;
   final int? statusId;
   final String lastModifiedBy;
+  final String partNumber;
+  final String internalPartNumber;
+  final int? quantity;
+  final List<String>? serials;
 
   Order({
-    required this.customerName,
-    required this.id,
-    required this.status,
-    required this.lastScanDate,
-    required this.currentScanInternalID,
-    required this.statusId,
-    required this.lastModifiedBy
+    this.customerName = '',
+    this.id = '',
+    this.status = '',
+    this.lastScanDate = null,
+    this.currentScanInternalID = null,
+    this.statusId = null,
+    this.lastModifiedBy = '',
+    this.partNumber = '',
+    this.internalPartNumber = '',
+    this.quantity = null,
+    this.serials = null
   });
 
 }
