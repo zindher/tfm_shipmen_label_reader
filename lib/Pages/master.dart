@@ -7,6 +7,7 @@ import 'package:tfm_shipmen_label_reader/Pages/settings.dart';
 import 'package:tfm_shipmen_label_reader/Pages/sync.dart';
 import '../Helpers/currentUser.dart';
 import '../Models/orderModel.dart';
+import 'InquiryDetail.dart';
 import 'customer_order.dart';
 import 'order_detail.dart';
 
@@ -67,6 +68,10 @@ class _MasterPageState extends State<MasterPage> {
           _title = 'Sincronizar';
           _isBackButtonVisible = true;
           break;
+        case 8:
+          _title = 'Detalles del pedido';
+          _isBackButtonVisible = true;
+          break;
       }
       if (_selectedIndex == 4) {
         _menuIconSelection = 1;
@@ -75,6 +80,8 @@ class _MasterPageState extends State<MasterPage> {
       } else if (_selectedIndex == 6) {
         _menuIconSelection = 2;
       } else if (_selectedIndex == 7) {
+        _menuIconSelection = 2;
+      } else if (_selectedIndex == 8) {
         _menuIconSelection = 2;
       } else {
         _menuIconSelection = _selectedIndex;
@@ -123,6 +130,8 @@ class _MasterPageState extends State<MasterPage> {
       body = ReadFramesPage(order: _obj as Order);
     } else if (_selectedIndex == 7) {
       body = SyncPage(order: _obj as Order, callback: _changePage);
+    } else if (_selectedIndex == 8) {
+      body = InquiryDetailPage(order: _obj);
     }
 
     return Scaffold(
@@ -144,6 +153,8 @@ class _MasterPageState extends State<MasterPage> {
                     } else if (_selectedIndex == 6) {
                       _changePage(5, _obj as Object, 0);
                     } else if (_selectedIndex == 7) {
+                      _changePage(5, _obj as Object, 0);
+                    } else if (_selectedIndex == 8) {
                       _changePage(5, _obj as Object, 0);
                     } else {
                       _changePage(1, '', 0);

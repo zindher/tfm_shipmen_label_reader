@@ -77,37 +77,36 @@ class _CustomerOrderPageState extends State<CustomerOrderPage> {
                             children: [
                               InkWell(
                                 radius: 1000,
-                                onTap: () {
-                                  widget.callback(4, widget.order, 5);
+                                onTap: () async {
+                                  ProgressBar.instance.show(context);
+                                  await OrdersService.startScan(widget.order.id);
+                                  ProgressBar.instance.hide();
+                                  widget.callback(6, widget.order, 0);
                                 },
-                                child: Image.asset('assets/images/List.png', width: 120),
+                                child: Image.asset(
+                                  'assets/images/Scan.png',
+                                  width: 60,
+                                ),
                               ),
-                              const Text('CONSULTA', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
+                              const Text('LECTURA', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
                             ],
                           ),
                           const Text(''),
                           Column(
                             children: [
-                          InkWell(
-                            radius: 1000,
-                            onTap: () async {
-                              ProgressBar.instance.show(context);
-                              await OrdersService.startScan(widget.order.id);
-                              ProgressBar.instance.hide();
-                              widget.callback(6, widget.order, 0);
-                            },
-                            child: Image.asset(
-                              'assets/images/Scan.png',
-                              width: 120,
-                            ),
-                          ),
-                          const Text('ESCANEO', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
+                              InkWell(
+                                radius: 1000,
+                                onTap: () {
+                                  widget.callback(7, widget.order, 0);
+                                },
+                                child: Image.asset('assets/images/Sync.png', width: 60),
+                              ),
+                              const Text('SINCRONIZACIÓN', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
                             ],
                           ),
                           const Text(''),
                         ],
                       ),
-                      const Text(''),
                       const Text(''),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -116,28 +115,52 @@ class _CustomerOrderPageState extends State<CustomerOrderPage> {
                           const Text(''),
                           Column(
                             children: [
-                          InkWell(
-                            radius: 1000,
-                            onTap: () {
-                              widget.callback(7, widget.order, 0);
-                            },
-                            child: Image.asset('assets/images/Sync.png', width: 120),
-                          ),
-                          const Text('SINCRONIZACIÓN', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
+                              InkWell(
+                                radius: 1000,
+                                onTap: () {
+                                  widget.callback(8, widget.order, 0);
+                                },
+                                child: Image.asset('assets/images/detalle.png', width: 60),
+                              ),
+                              const Text('DETALLES DEL', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
+                              const Text('PEDIDO', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
                             ],
                           ),
-                              Column(
-                                children: [
-                          InkWell(
-                            radius: 1000,
-                            onTap: () {
-                              widget.callback(2, "", 0);
-                            },
-                            child: Image.asset('assets/images/Close.png', width: 120),
-                          ),
-                          const Text('SALIR DEL PEDIDO', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
-                                ],
+                          const Text(''),
+                          Column(
+                            children: [
+                              InkWell(
+                                radius: 1000,
+                                onTap: () {
+                                  widget.callback(4, widget.order, 5);
+                                },
+                                child: Image.asset('assets/images/List.png', width: 60),
                               ),
+                              const Text('SERIALES', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
+                              const Text('ESCANEADOS', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
+                            ],
+                          ),
+                          const Text(''),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(''),
+                          Column(
+                            children: [
+                              InkWell(
+                                radius: 1000,
+                                onTap: () {
+                                  widget.callback(2, "", 0);
+                                },
+                                child: Image.asset('assets/images/Close.png', width: 60),
+                              ),
+                              const Text('SALIR DEL', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
+                              const Text('PEDIDO', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xff01136D))),
+                            ],
+                          ),
                           const Text(''),
                         ],
                       ),

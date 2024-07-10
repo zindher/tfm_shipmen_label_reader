@@ -9,6 +9,8 @@ class OrderDetail {
   final DateTime? date;
   final String akiSerial;
   final String qty;
+  final String partNumberProvider;
+  final String masterProvider;
 
   OrderDetail({
     required this.id,
@@ -18,6 +20,8 @@ class OrderDetail {
     required this.master,
     required this.date,
     required this.akiSerial,
-    required this.qty
+    required this.qty,
+    this.partNumberProvider = "",
+    this.masterProvider = "",
   });
 }

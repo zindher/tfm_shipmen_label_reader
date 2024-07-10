@@ -21,10 +21,12 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
   int _optionsNumber = 0;
 
   Order akiOrder = Order();
+  Order order = Order();
   var labelText1 = "";
   var labelText2 = "";
   var isAKI = false;
   var akiPartNumber = "";
+  var originText = "";
 
   final fMasterTextController = TextEditingController();
   final fQtyTextController = TextEditingController();
@@ -33,8 +35,10 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
   final fAKISerialTextController = TextEditingController();
 
   final pMasterTextController = TextEditingController();
+  final pMasterProviderTextController = TextEditingController();
   final pQtyTextController = TextEditingController();
   final pPartNumberTextController = TextEditingController();
+  final pPartNumberProviderTextController = TextEditingController();
 
   @override
   void initState() {
@@ -84,6 +88,27 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
     }
   }
 
+  Future<void> validatePart() async {
+    try {
+      order = await OrdersService.validateAkiPart(fMasterTextController.text);
+      if (order.quantity != null && order.quantity! > 0 && order.partNumber.length > 0) {
+        fQtyTextController.text = order.quantity.toString();
+        FocusScope.of(context).nextFocus();
+        FocusScope.of(context).nextFocus();
+      } else {
+        AlertHelper.showErrorToast("Master invalido!!");
+        fMasterTextController.text = "";
+        fQtyTextController.text = '';
+        order = Order();
+      }
+    } catch (e) {
+      fMasterTextController.text = "";
+      fQtyTextController.text = '';
+      akiPartNumber = "";
+      order = Order();
+    }
+  }
+
   Future<void> validateAkiUnit() async {
     var aux = false;
     for (var a in akiOrder.serials!) {
@@ -96,6 +121,21 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
       fSerialTextController.text = '';
     } else {
       FocusScope.of(context).nextFocus();
+    }
+  }
+
+  Future<void> validateUnit() async {
+    var aux = false;
+    for (var a in order.serials!) {
+      if (a.contains(fSerialTextController.text.replaceAll(' ', ''))) {
+        aux = true;
+      }
+    }
+    if (!aux) {
+      AlertHelper.showErrorToast("Etiqueta Unitaria no esta contenida en los seriales de master!!");
+      fSerialTextController.text = '';
+    } else {
+      await fSave();
     }
   }
 
@@ -165,6 +205,7 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
           FocusScope.of(context).previousFocus();
           FocusScope.of(context).previousFocus();
           FocusScope.of(context).previousFocus();
+          FocusScope.of(context).previousFocus();
           AlertHelper.showErrorToast('Datos incorrectos revisalos!!');
         }
       }
@@ -172,7 +213,11 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
   }
 
   Future<void> pSave() async {
-    if (pPartNumberTextController.text.length > 5 && int.parse(pQtyTextController.text) > 0 && pMasterTextController.text.length > 5) {
+    if (pPartNumberTextController.text.length > 5 &&
+        pPartNumberProviderTextController.text.length > 5 &&
+        int.parse(pQtyTextController.text) > 0 &&
+        pMasterTextController.text.length > 5 &&
+        pMasterProviderTextController.text.length > 5) {
       response = await OrdersService.saveOrderContent(OrderDetail(
           id: widget.order.id,
           partNumber: pPartNumberTextController.text,
@@ -181,7 +226,9 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
           master: pMasterTextController.text,
           date: null,
           akiSerial: "",
-          qty: ""));
+          qty: "",
+          partNumberProvider: pPartNumberProviderTextController.text,
+          masterProvider: pMasterProviderTextController.text));
       if (!response.hasError) {
         pCleanFields();
         AlertHelper.showSuccessToast(response.message);
@@ -193,12 +240,44 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
     }
   }
 
+  Future<void> validatePartNumber() async {
+    if (pPartNumberTextController.text.length > 5 && pPartNumberProviderTextController.text.length > 5) {
+      response = await OrdersService.validatePartNumber(widget.order.id, pPartNumberTextController.text, pPartNumberProviderTextController.text);
+      if (response.hasError) {
+        pPartNumberProviderTextController.text = "";
+        AlertHelper.showErrorToast(response.message);
+      } else {
+        FocusScope.of(context).nextFocus();
+      }
+    } else {
+      AlertHelper.showErrorToast('Los números de parte son incorrectos!!');
+    }
+  }
+
+  Future<void> validateMaster() async {
+        if (pPartNumberTextController.text.length > 5 &&
+            pPartNumberProviderTextController.text.length > 5 &&
+            pMasterProviderTextController.text.length > 5 &&
+            pMasterTextController.text.length > 5) {
+      response = await OrdersService.validateMaster(pPartNumberTextController.text, pPartNumberProviderTextController.text);
+      if (response.hasError) {
+        pPartNumberProviderTextController.text = "";
+        AlertHelper.showErrorToast(response.message);
+      } else {
+        await pSave();
+      }
+    } else {
+      AlertHelper.showErrorToast('Los números de parte son incorrectos!!');
+    }
+  }
+
   void fCleanFields() {
     fMasterTextController.text = "";
     fQtyTextController.text = "";
     fPartNumberTextController.text = "";
     fSerialTextController.text = "";
     fAKISerialTextController.text = "";
+    originText = "";
 
     FocusScope.of(context).previousFocus();
     FocusScope.of(context).previousFocus();
@@ -210,6 +289,11 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
     pMasterTextController.text = "";
     pQtyTextController.text = "";
     pPartNumberTextController.text = "";
+    pPartNumberProviderTextController.text = "";
+    pMasterProviderTextController.text = "";
+
+    FocusScope.of(context).previousFocus();
+    FocusScope.of(context).previousFocus();
     FocusScope.of(context).previousFocus();
     FocusScope.of(context).previousFocus();
   }
@@ -251,7 +335,7 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                             _optionsNumber = 1;
                           })
                         },
-                        child: const Text('Lectura de Frames', style: TextStyle(fontSize: 15, color: Colors.white)),
+                        child: const Text('  Locales  ', style: TextStyle(fontSize: 15, color: Colors.white)),
                       ),
                       const Expanded(child: Text("")),
                       ElevatedButton(
@@ -261,7 +345,7 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                             _optionsNumber = 2;
                           })
                         },
-                        child: const Text('Lectura de Partes', style: TextStyle(fontSize: 15, color: Colors.white)),
+                        child: const Text('Passthrough', style: TextStyle(fontSize: 15, color: Colors.white)),
                       ),
                       const Expanded(child: Text("")),
                     ]),
@@ -271,10 +355,11 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                 Visibility(
                     visible: _optionsNumber == 1,
                     child: Column(children: <Widget>[
-                      const Text('Lectura de Frames', textAlign: TextAlign.center, style: TextStyle(fontSize: 20)),
+                      const Text('Locales', textAlign: TextAlign.center, style: TextStyle(fontSize: 20)),
                       TextFormField(
                         controller: fMasterTextController,
                         autofocus: true,
+                        //focusNode: 1,
                         textInputAction: TextInputAction.next,
                         onTap: () => fMasterTextController.selection = TextSelection(baseOffset: 0, extentOffset: fMasterTextController.value.text.length),
                         onChanged: (val) async {
@@ -285,6 +370,9 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                               await validateAkiPart();
                               ProgressBar.instance.hide();
                             } else {
+                              //ProgressBar.instance.show(context);
+                              //await validatePart();
+                              //ProgressBar.instance.hide();
                               FocusScope.of(context).nextFocus();
                             }
                           } else {
@@ -315,35 +403,35 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                         textInputAction: TextInputAction.next,
                         onTap: () => fPartNumberTextController.selection = TextSelection(baseOffset: 0, extentOffset: fPartNumberTextController.value.text.length),
                         onChanged: (val) async {
-                          if (isAKI) {
-                            if (val.length > 5 && val[0].toLowerCase() == 'p') {
-                              fPartNumberTextController.text = val.substring(1, val.length);
-
-                              if (fPartNumberTextController.text == akiOrder.partNumber) {
-                                FocusScope.of(context).nextFocus();
-                              } else {
-                                fPartNumberTextController.text = "";
-                                AlertHelper.showErrorToast('El Número de parte no coinside!!');
-                              }
+                          if (val.length > 5 && val[0].toLowerCase() == 'p') {
+                            ProgressBar.instance.show(context);
+                            fPartNumberTextController.text = val.substring(1, val.length);
+                            var a = await OrdersService.ValidateOriginPartNumber(1, fPartNumberTextController.text);
+                            if (a.hasError) {
+                              AlertHelper.showErrorToast(a.message);
+                              fAKISerialTextController.text = '';
                             } else {
-                              fPartNumberTextController.text = "";
-                              AlertHelper.showErrorToast("${labelText1} no contiene formato correcto");
+                              if (isAKI) {
+                                if (fPartNumberTextController.text == akiOrder.partNumber) {
+                                  FocusScope.of(context).nextFocus();
+                                } else {
+                                  fPartNumberTextController.text = "";
+                                  AlertHelper.showErrorToast('El número de parte no coinside!!');
+                                }
+                              } else {
+                                response = await OrdersService.ValidatePartNumberInOrder(await OrdersService.startScan(widget.order.id), fPartNumberTextController.text);
+                                if (!response.hasError) {
+                                  FocusScope.of(context).nextFocus();
+                                } else {
+                                  fPartNumberTextController.text = "";
+                                  AlertHelper.showErrorToast(response.message);
+                                }
+                              }
                             }
+                            ProgressBar.instance.hide();
                           } else {
-                            if (val.length > 5) {
-                              response = await OrdersService.ValidatePartNumberInOrder(await OrdersService.startScan(widget.order.id), fPartNumberTextController.text);
-
-                              if (!response.hasError) {
-                                FocusScope.of(context).nextFocus();
-                              } else {
-                                fPartNumberTextController.text = "";
-                                AlertHelper.showErrorToast(response.message);
-                              }
-
-                            } else {
-                              fPartNumberTextController.text = "";
-                              AlertHelper.showErrorToast("${labelText1} no contiene formato correcto");
-                            }
+                            fPartNumberTextController.text = "";
+                            AlertHelper.showErrorToast("${labelText1} no contiene formato correcto");
                           }
                         },
                         decoration: InputDecoration(border: UnderlineInputBorder(), labelText: labelText1, suffixText: labelText2),
@@ -355,6 +443,11 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                         onChanged: (val) async {
                           try {
                             ProgressBar.instance.show(context);
+                            if(originText.length > val.length){
+                              val = "";
+                              originText = "";
+                              fSerialTextController.text = "";
+                            }
                             if (isAKI) {
                               if (val.length > 5) {
                                 //fSerialTextController.text = val.substring(1, val.length);
@@ -365,14 +458,17 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                               }
                             } else {
                               if (val.length > 5) {
+                                //await validateUnit();
                                 await fSave();
                               } else {
                                 fSerialTextController.text = "";
                                 AlertHelper.showErrorToast("Serial no contiene formato correcto");
                               }
                             }
+                            originText = val;
                             ProgressBar.instance.hide();
                           } catch (exception, stack) {
+                            originText = val;
                             ProgressBar.instance.hide();
                           }
                         },
@@ -428,22 +524,30 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                 Visibility(
                     visible: _optionsNumber == 2,
                     child: Column(children: <Widget>[
-                      const Text('Lectura de Partes', textAlign: TextAlign.center, style: TextStyle(fontSize: 20)),
+                      const Text('Passthrough', textAlign: TextAlign.center, style: TextStyle(fontSize: 20)),
                       TextFormField(
-                        controller: pMasterTextController,
+                        controller: pPartNumberTextController,
                         autofocus: true,
                         textInputAction: TextInputAction.next,
-                        onTap: () => pMasterTextController.selection = TextSelection(baseOffset: 0, extentOffset: pMasterTextController.value.text.length),
-                        onChanged: (val) {
-                          if (val.length > 5 && val[0].toLowerCase() == 's') {
-                            pMasterTextController.text = val.substring(1, val.length);
-                            FocusScope.of(context).nextFocus();
+                        onTap: () => pPartNumberTextController.selection = TextSelection(baseOffset: 0, extentOffset: pPartNumberTextController.value.text.length),
+                        onChanged: (val) async {
+                          if (val.length > 5 && val[0].toLowerCase() == 'p') {
+                            ProgressBar.instance.show(context);
+                            pPartNumberTextController.text = val.substring(1, val.length);
+                            var a = await OrdersService.ValidateOriginPartNumber(2, pPartNumberTextController.text);
+                            if (a.hasError) {
+                              AlertHelper.showErrorToast(a.message);
+                              pPartNumberTextController.text = "";
+                            } else {
+                              FocusScope.of(context).nextFocus();
+                            }
+                            ProgressBar.instance.hide();
                           } else {
-                            pMasterTextController.text = "";
-                            AlertHelper.showErrorToast("Master no contiene formato correcto");
+                            pPartNumberTextController.text = "";
+                            AlertHelper.showErrorToast("No. Parte no contiene formato correcto");
                           }
                         },
-                        decoration: const InputDecoration(border: UnderlineInputBorder(), labelText: 'Master', suffixText: 'Escanea Master'),
+                        decoration: const InputDecoration(border: UnderlineInputBorder(), labelText: 'Parte', suffixText: 'Escanea Número de Parte'),
                       ),
                       TextFormField(
                         controller: pQtyTextController,
@@ -461,21 +565,57 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                         decoration: const InputDecoration(border: UnderlineInputBorder(), labelText: 'Cantidad', suffixText: 'Escanea Cantidad'),
                       ),
                       TextFormField(
-                        controller: pPartNumberTextController,
+                        controller: pMasterTextController,
                         textInputAction: TextInputAction.next,
-                        onTap: () => pPartNumberTextController.selection = TextSelection(baseOffset: 0, extentOffset: pPartNumberTextController.value.text.length),
+                        onTap: () => pMasterTextController.selection = TextSelection(baseOffset: 0, extentOffset: pMasterTextController.value.text.length),
+                        onChanged: (val) {
+                          if (val.length > 5 && val[0].toLowerCase() == 's') {
+                            pMasterTextController.text = val.substring(1, val.length);
+                            FocusScope.of(context).nextFocus();
+                          } else {
+                            pMasterTextController.text = "";
+                            AlertHelper.showErrorToast("Master no contiene formato correcto");
+                          }
+                        },
+                        decoration: const InputDecoration(border: UnderlineInputBorder(), labelText: 'Master', suffixText: 'Escanea Master'),
+                      ),
+                      TextFormField(
+                        controller: pPartNumberProviderTextController,
+                        textInputAction: TextInputAction.next,
+                        onTap: () =>
+                            pPartNumberProviderTextController.selection = TextSelection(baseOffset: 0, extentOffset: pPartNumberProviderTextController.value.text.length),
                         onChanged: (val) async {
                           if (val.length > 5 && val[0].toLowerCase() == 'p') {
+                            //validar numero de parte pendinte voy a mandar numero de parte y parte provedor
                             ProgressBar.instance.show(context);
-                            pPartNumberTextController.text = val.substring(1, val.length);
-                            await pSave();
+                            pPartNumberProviderTextController.text = val.substring(1, val.length);
+                            await validatePartNumber();
                             ProgressBar.instance.hide();
                           } else {
-                            pPartNumberTextController.text = "";
+                            pPartNumberProviderTextController.text = "";
                             AlertHelper.showErrorToast("No. Parte no contiene formato correcto");
                           }
                         },
-                        decoration: const InputDecoration(border: UnderlineInputBorder(), labelText: 'Parte', suffixText: 'Escanea Número de Parte'),
+                        decoration: const InputDecoration(border: UnderlineInputBorder(), labelText: 'Parte Proveedor', suffixText: 'Escanea Número de Parte'),
+                      ),
+                      TextFormField(
+                        controller: pMasterProviderTextController,
+                        autofocus: true,
+                        textInputAction: TextInputAction.next,
+                        onTap: () => pMasterProviderTextController.selection = TextSelection(baseOffset: 0, extentOffset: pMasterProviderTextController.value.text.length),
+                        onChanged: (val) async {
+                          if (val.length > 5 && val[0].toLowerCase() == 's') {
+                            //validar master proveedor y numero de pedido
+                            ProgressBar.instance.show(context);
+                            pMasterProviderTextController.text = val.substring(1, val.length);
+                            await validateMaster();
+                            ProgressBar.instance.hide();
+                          } else {
+                            pMasterProviderTextController.text = "";
+                            AlertHelper.showErrorToast("Master no contiene formato correcto");
+                          }
+                        },
+                        decoration: const InputDecoration(border: UnderlineInputBorder(), labelText: 'Master Proveedor', suffixText: 'Escanea Master'),
                       ),
                       Text(""),
                       Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[

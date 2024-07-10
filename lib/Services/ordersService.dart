@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:decimal/decimal.dart';
 import '../Helpers/alert.dart';
 import '../Helpers/currentUser.dart';
+import '../Models/OrderReportModel.dart';
 import '../Models/orderDetailModel.dart';
 import '../Models/responseMessageModel.dart';
 import '../Providers/appConfig.dart';
@@ -10,7 +11,6 @@ import '../Models/orderModel.dart';
 import 'package:http/http.dart' as http;
 
 class OrdersService {
-
   static Future<ResponseMessage> ValidatePartNumberInOrder(int idScan, String partNumber) async {
     ResponseMessage responseMessage = ResponseMessage(hasError: true, message: "Error de conexión!!", extraData: "");
     try {
@@ -84,10 +84,12 @@ class OrdersService {
       Map<String, dynamic> responseData = jsonDecode(response.body);
       if (response.statusCode == 200) {
         final List<String>? serials = (responseData["serials"] as List)?.cast<String>();
-
         order = Order(partNumber: responseData["partNumber"], internalPartNumber: responseData["partNumberInternal"], quantity: responseData["quantity"], serials: serials);
       } else {
         AlertHelper.showErrorToast("Error de conexión!!");
+      }
+      if(order.serials?.length == 0) {
+        AlertHelper.showErrorToast("No hay seriales registrados!!");
       }
     } on SocketException {
       AlertHelper.showErrorToast("Error de conexión!!");
@@ -106,6 +108,58 @@ class OrdersService {
     ResponseMessage responseMessage = ResponseMessage(hasError: true, message: "Error de conexión!!", extraData: "");
     try {
       String url = "${AppConfig.host}/Scan/ValidateAkiSerial?akiSerial=${serial}&partNumber=${partNumber}";
+      final response = await http.get(Uri.parse(url), headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      });
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = jsonDecode(response.body);
+        responseMessage = ResponseMessage(hasError: bool.parse('${responseData['hasError']}'), message: '${responseData['message']}', extraData: "");
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
+      }
+    } on SocketException {
+      AlertHelper.showErrorToast("Error de conexión!!");
+    } on HttpException {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } on FormatException {
+      AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } finally {
+      return responseMessage;
+    }
+  }
+
+  static Future<ResponseMessage> validatePartNumber(String order, String partNumber, String partNumberProvider) async {
+    ResponseMessage responseMessage = ResponseMessage(hasError: true, message: "Error de conexión!!", extraData: "");
+    try {
+      String url = "${AppConfig.host}/Scan/ValidateMatchPartNumber?order=${order}&partNumber=${partNumber}&partNumberProvider=${partNumberProvider}";
+      final response = await http.get(Uri.parse(url), headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      });
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = jsonDecode(response.body);
+        responseMessage = ResponseMessage(hasError: bool.parse('${responseData['hasError']}'), message: '${responseData['message']}', extraData: "");
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
+      }
+    } on SocketException {
+      AlertHelper.showErrorToast("Error de conexión!!");
+    } on HttpException {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } on FormatException {
+      AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } finally {
+      return responseMessage;
+    }
+  }
+
+  static Future<ResponseMessage> validateMaster(String masterProvider, String order) async {
+    ResponseMessage responseMessage = ResponseMessage(hasError: true, message: "Error de conexión!!", extraData: "");
+    try {
+      String url = "${AppConfig.host}/Scan/ValidateMasterProviderOrder?masterProvider=${masterProvider}&order=${order}";
       final response = await http.get(Uri.parse(url), headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       });
@@ -168,6 +222,42 @@ class OrdersService {
     }
   }
 
+  static Future<List<OrderReport>> getReportDetailsOrder(String orderId) async {
+    List<OrderReport> orderDetails = [];
+    try {
+      String url = "${AppConfig.host}/Scan/GetReportDetailsOrder?order=${orderId}";
+      final response = await http.get(Uri.parse(url), headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      });
+
+      var responseData = json.decode(response.body);
+      if (response.statusCode == 200) {
+        for (var singleOrder in responseData) {
+          OrderReport orderDetail = OrderReport(
+            partNumber: singleOrder["partNumber"],
+            description: singleOrder["description"],
+            quantityPlan: Decimal.parse(singleOrder["quantityPlan"].toString() ?? "0"),
+            quantityReal: Decimal.parse(singleOrder["quantityReal"].toString() ?? "0"),
+            quantityDiff: Decimal.parse(singleOrder["quantityDiff"].toString() ?? "0"),
+          );
+          orderDetails.add(orderDetail);
+        }
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
+      }
+    } on SocketException {
+      AlertHelper.showErrorToast("Error de conexión!!");
+    } on HttpException {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } on FormatException {
+      AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } finally {
+      return orderDetails;
+    }
+  }
+
   static Future<ResponseMessage> saveOrderContent(OrderDetail order) async {
     ResponseMessage responseMessage = ResponseMessage(hasError: true, message: "Error de conexión!!", extraData: "");
     final currentScanInternalID = await OrdersService.startScan(order.id);
@@ -184,7 +274,9 @@ class OrdersService {
             'serial': order.serial,
             'master': order.master,
             'user': CurrentUser.instance.user.idUser.toString(),
-            'secondSerial': order.akiSerial
+            'secondSerial': order.akiSerial,
+            'partNumberProvider': order.partNumberProvider,
+            'masterProvider': order.masterProvider
           }));
 
       if (response.statusCode == 200) {
@@ -216,6 +308,7 @@ class OrdersService {
           },
           body: jsonEncode(<String, String>{
             'idScan': idScan.toString(),
+            'idUser': CurrentUser.instance.user.idUser.toString()
           }));
 
       if (response.statusCode == 200) {
@@ -262,6 +355,32 @@ class OrdersService {
       AlertHelper.showErrorToast("Error de servidor!!");
     } finally {
       return responseId;
+    }
+  }
+
+  static Future<ResponseMessage> ValidateOriginPartNumber(int idOrigin, String partNumber) async {
+    ResponseMessage responseMessage = ResponseMessage(hasError: true, message: "Error de conexión!!", extraData: "");
+    try {
+      String url = "${AppConfig.host}/Scan/ValidateOriginPartNumber?idOrigin=${idOrigin}&partNumber=${partNumber}";
+      final response = await http.get(Uri.parse(url), headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      });
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = jsonDecode(response.body);
+        responseMessage = ResponseMessage(hasError: bool.parse('${responseData['hasError']}'), message: '${responseData['message']}', extraData: "");
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
+      }
+    } on SocketException {
+      AlertHelper.showErrorToast("Error de conexión!!");
+    } on HttpException {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } on FormatException {
+      AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } finally {
+      return responseMessage;
     }
   }
 }
