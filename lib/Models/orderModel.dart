@@ -8,6 +8,7 @@ class Order {
   final String lastModifiedBy;
   final String partNumber;
   final String internalPartNumber;
+  final String clientCode;
   final int? quantity;
   final List<String>? serials;
 
@@ -22,7 +23,8 @@ class Order {
     this.partNumber = '',
     this.internalPartNumber = '',
     this.quantity = null,
-    this.serials = null
+    this.serials = null,
+    this.clientCode = ''
   });
 
 }

@@ -43,7 +43,7 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
   @override
   void initState() {
     super.initState();
-    if (widget.order.customerName.contains('AKI')) {
+    if (widget.order.clientCode == "A0058") {
       isAKI = true;
       labelText1 = "AKI WEB (Número de parte)";
       labelText2 = "Escanea Número de parte";
@@ -173,6 +173,7 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
             AlertHelper.showSuccessToast(response.message);
           } else {
             AlertHelper.showErrorToast(response.message);
+            fAKISerialTextController.text = "";
           }
         } else {
           FocusScope.of(context).previousFocus();
@@ -200,6 +201,7 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
             AlertHelper.showSuccessToast(response.message);
           } else {
             AlertHelper.showErrorToast(response.message);
+            fSerialTextController.text = "";
           }
         } else {
           FocusScope.of(context).previousFocus();
@@ -234,9 +236,36 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
         AlertHelper.showSuccessToast(response.message);
       } else {
         AlertHelper.showErrorToast(response.message);
+        pMasterProviderTextController.text = "";
       }
     } else {
       AlertHelper.showErrorToast('Datos incorrectos revisalos!!');
+    }
+  }
+
+  Future<void> ValidateMasterProviderOrder() async {
+    if (fMasterTextController.text.length > 5) {
+      response = await OrdersService.ValidateMasterProviderOrder(fMasterTextController.text, widget.order.id);
+      if (response.hasError) {
+        fMasterTextController.text = "";
+        AlertHelper.showErrorToast(response.message);
+      }
+    }else{
+      fMasterTextController.text = "";
+      AlertHelper.showErrorToast("Master no contiene formato correcto");
+    }
+  }
+
+  Future<void> ValidateMasterProviderOrder1() async {
+    if (pMasterTextController.text.length > 5) {
+      response = await OrdersService.ValidateMasterProviderOrder(pMasterTextController.text, widget.order.id);
+      if (response.hasError) {
+        pMasterTextController.text = "";
+        AlertHelper.showErrorToast(response.message);
+      }
+    }else{
+      pMasterTextController.text = "";
+      AlertHelper.showErrorToast("Master no contiene formato correcto");
     }
   }
 
@@ -364,17 +393,17 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                         onTap: () => fMasterTextController.selection = TextSelection(baseOffset: 0, extentOffset: fMasterTextController.value.text.length),
                         onChanged: (val) async {
                           if (val.length > 5 && val[0].toLowerCase() == 's') {
+                            ProgressBar.instance.show(context);
                             fMasterTextController.text = val.substring(1, val.length);
-                            if (isAKI) {
-                              ProgressBar.instance.show(context);
-                              await validateAkiPart();
-                              ProgressBar.instance.hide();
-                            } else {
-                              //ProgressBar.instance.show(context);
-                              //await validatePart();
-                              //ProgressBar.instance.hide();
-                              FocusScope.of(context).nextFocus();
+                            await ValidateMasterProviderOrder();
+                            if(fMasterTextController.text.length > 5){
+                              if (isAKI) {
+                                await validateAkiPart();
+                              } else {
+                                FocusScope.of(context).nextFocus();
+                              }
                             }
+                            ProgressBar.instance.hide();
                           } else {
                             fMasterTextController.text = "";
                             AlertHelper.showErrorToast("Master no contiene formato correcto");
@@ -388,7 +417,9 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                         textInputAction: TextInputAction.next,
                         onTap: () => fQtyTextController.selection = TextSelection(baseOffset: 0, extentOffset: fQtyTextController.value.text.length),
                         onChanged: (val) {
-                          if (int.parse(val.substring(1, val.length) ?? "0") > 0 && val[0].toLowerCase() == 'q') {
+                          int? q = 0;
+                          q = int.tryParse(val.substring(1, val.length));
+                          if (val[0].toLowerCase() == 'q' && q! > 0) {
                             fQtyTextController.text = val.substring(1, val.length);
                             FocusScope.of(context).nextFocus();
                           } else {
@@ -554,7 +585,9 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                         textInputAction: TextInputAction.next,
                         onTap: () => pQtyTextController.selection = TextSelection(baseOffset: 0, extentOffset: pQtyTextController.value.text.length),
                         onChanged: (val) {
-                          if (int.parse(val.substring(1, val.length) ?? "0") > 0 && val[0].toLowerCase() == 'q') {
+                          int? q = 0;
+                          q = int.tryParse(val.substring(1, val.length));
+                          if (val[0].toLowerCase() == 'q' && q! > 0) {
                             pQtyTextController.text = val.substring(1, val.length);
                             FocusScope.of(context).nextFocus();
                           } else {
@@ -605,9 +638,9 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                         onTap: () => pMasterProviderTextController.selection = TextSelection(baseOffset: 0, extentOffset: pMasterProviderTextController.value.text.length),
                         onChanged: (val) async {
                           if (val.length > 5 && val[0].toLowerCase() == 's') {
-                            //validar master proveedor y numero de pedido
                             ProgressBar.instance.show(context);
                             pMasterProviderTextController.text = val.substring(1, val.length);
+                            await ValidateMasterProviderOrder1();
                             await validateMaster();
                             ProgressBar.instance.hide();
                           } else {

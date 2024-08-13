@@ -55,7 +55,9 @@ class OrdersService {
               currentScanInternalID: singleOrder["currentScanInternalID"].toString() ?? "",
               statusId: singleOrder["statusId"],
               status: singleOrder["status"],
-              lastModifiedBy: singleOrder["lastModifiedBy"] ?? "");
+              lastModifiedBy: singleOrder["lastModifiedBy"] ?? "",
+              clientCode: singleOrder["clienteCode"]
+          );
           orders.add(order);
         }
       } else {
@@ -157,6 +159,32 @@ class OrdersService {
   }
 
   static Future<ResponseMessage> validateMaster(String masterProvider, String order) async {
+    ResponseMessage responseMessage = ResponseMessage(hasError: true, message: "Error de conexión!!", extraData: "");
+    try {
+      String url = "${AppConfig.host}/Scan/ValidateMasterProviderOrder?masterProvider=${masterProvider}&order=${order}";
+      final response = await http.get(Uri.parse(url), headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      });
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = jsonDecode(response.body);
+        responseMessage = ResponseMessage(hasError: bool.parse('${responseData['hasError']}'), message: '${responseData['message']}', extraData: "");
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
+      }
+    } on SocketException {
+      AlertHelper.showErrorToast("Error de conexión!!");
+    } on HttpException {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } on FormatException {
+      AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } finally {
+      return responseMessage;
+    }
+  }
+
+  static Future<ResponseMessage> ValidateMasterProviderOrder (String masterProvider, String order) async {
     ResponseMessage responseMessage = ResponseMessage(hasError: true, message: "Error de conexión!!", extraData: "");
     try {
       String url = "${AppConfig.host}/Scan/ValidateMasterProviderOrder?masterProvider=${masterProvider}&order=${order}";

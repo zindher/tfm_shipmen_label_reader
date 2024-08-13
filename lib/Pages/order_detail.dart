@@ -21,7 +21,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     var o = await OrdersService.getOrderDetailsByOrder(widget.order);
     if (filter.toString().isNotEmpty) {
       response = o
-          .where((e) => (e.partNumber.toUpperCase().contains(filter.toString().toUpperCase()) ||
+          .where((e) => (
+              e.partNumber.toUpperCase().contains(filter.toString().toUpperCase()) ||
               e.quantity.toString().toUpperCase().contains(filter.toString().toUpperCase()) ||
               e.serial.toUpperCase().contains(filter.toString().toUpperCase()) ||
               e.master.toUpperCase().contains(filter.toString().toUpperCase()) ||
@@ -84,7 +85,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                             subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                               Text(''),
                               Text('Cantidad: ${_orderDetails[x].qty}'),
-                              Text('Serial: ${_orderDetails[x].serial}'),
+                              Text('Master: ${_orderDetails[x].master}'),
                               Text('Fecha: ${_orderDetails[x].date}'),
                               Text(''),
                             ]))
