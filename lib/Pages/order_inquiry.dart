@@ -26,7 +26,7 @@ class _OrderInquiryPageState extends State<OrderInquiryPage> {
               e.lastScanDate.toString().toUpperCase().contains(filter.toString().toUpperCase())))
           .toList();
     } else {
-      response = o.where((e) => e.statusId == null || e.statusId == 1).toList();
+      response = o.where((e) => e.statusId == null || e.statusId == 1 || e.statusId == 2).toList();
     }
 
     setState(() {

@@ -26,11 +26,11 @@ class _ScanPageState extends State<ScanPage> {
     if (filter.toString().isNotEmpty) {
       response = o
           .where((e) =>
-              (e.statusId == null || e.statusId == 1) &&
+              (e.statusId == null || e.statusId == 1 || e.statusId == 2) &&
               (e.id.toUpperCase().contains(filter.toString().toUpperCase()) || e.customerName.toUpperCase().contains(filter.toString().toUpperCase())))
           .toList();
     } else {
-      response = o.where((e) => e.statusId == null || e.statusId == 1).toList();
+      response = o.where((e) => e.statusId == null || e.statusId == 1 || e.statusId == 2).toList();
     }
     return response;
   }

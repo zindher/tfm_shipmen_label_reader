@@ -24,6 +24,8 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
   Order order = Order();
   var labelText1 = "";
   var labelText2 = "";
+  var labelText3 = "";
+  var labelText4 = "";
   var isAKI = false;
   var akiPartNumber = "";
   var originText = "";
@@ -47,10 +49,16 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
       isAKI = true;
       labelText1 = "AKI WEB (Número de parte)";
       labelText2 = "Escanea Número de parte";
+
+      labelText3 = "Parte Aki Web";
+      labelText4 = "Master Aki Web";
     } else {
       isAKI = false;
       labelText1 = "No. Parte";
       labelText2 = "Escanea Número de Parte";
+
+      labelText3 = "Parte Proveedor";
+      labelText4 = "Master Proveedor";
     }
   }
 
@@ -90,21 +98,16 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
 
   Future<void> validatePart() async {
     try {
-      order = await OrdersService.validateAkiPart(fMasterTextController.text);
-      if (order.quantity != null && order.quantity! > 0 && order.partNumber.length > 0) {
-        fQtyTextController.text = order.quantity.toString();
-        FocusScope.of(context).nextFocus();
+      order = await OrdersService.ValidateSerial(fMasterTextController.text, widget.order.id);
+      if (order.partNumber.length > 0) {
         FocusScope.of(context).nextFocus();
       } else {
         AlertHelper.showErrorToast("Master invalido!!");
         fMasterTextController.text = "";
-        fQtyTextController.text = '';
         order = Order();
       }
     } catch (e) {
       fMasterTextController.text = "";
-      fQtyTextController.text = '';
-      akiPartNumber = "";
       order = Order();
     }
   }
@@ -127,7 +130,7 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
   Future<void> validateUnit() async {
     var aux = false;
     for (var a in order.serials!) {
-      if (a.contains(fSerialTextController.text.replaceAll(' ', ''))) {
+      if (a.contains(fSerialTextController.text.replaceAll(' ', '')) || a.contains('NO REQUIERE VALIDACION')) {
         aux = true;
       }
     }
@@ -400,7 +403,7 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                               if (isAKI) {
                                 await validateAkiPart();
                               } else {
-                                FocusScope.of(context).nextFocus();
+                                await validatePart();
                               }
                             }
                             ProgressBar.instance.hide();
@@ -437,7 +440,7 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                           if (val.length > 5 && val[0].toLowerCase() == 'p') {
                             ProgressBar.instance.show(context);
                             fPartNumberTextController.text = val.substring(1, val.length);
-                            var a = await OrdersService.ValidateOriginPartNumber(1, fPartNumberTextController.text);
+                            var a = await OrdersService.ValidateOriginPartNumber(1, fPartNumberTextController.text, widget.order.id);
                             if (a.hasError) {
                               AlertHelper.showErrorToast(a.message);
                               fAKISerialTextController.text = '';
@@ -489,8 +492,8 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                               }
                             } else {
                               if (val.length > 5) {
-                                //await validateUnit();
-                                await fSave();
+                                await validateUnit();
+                                //await fSave();
                               } else {
                                 fSerialTextController.text = "";
                                 AlertHelper.showErrorToast("Serial no contiene formato correcto");
@@ -565,7 +568,7 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                           if (val.length > 5 && val[0].toLowerCase() == 'p') {
                             ProgressBar.instance.show(context);
                             pPartNumberTextController.text = val.substring(1, val.length);
-                            var a = await OrdersService.ValidateOriginPartNumber(2, pPartNumberTextController.text);
+                            var a = await OrdersService.ValidateOriginPartNumber(2, pPartNumberTextController.text, widget.order.id);
                             if (a.hasError) {
                               AlertHelper.showErrorToast(a.message);
                               pPartNumberTextController.text = "";
@@ -613,6 +616,7 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                         decoration: const InputDecoration(border: UnderlineInputBorder(), labelText: 'Master', suffixText: 'Escanea Master'),
                       ),
                       TextFormField(
+                        //numero de parte
                         controller: pPartNumberProviderTextController,
                         textInputAction: TextInputAction.next,
                         onTap: () =>
@@ -626,29 +630,36 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                             ProgressBar.instance.hide();
                           } else {
                             pPartNumberProviderTextController.text = "";
-                            AlertHelper.showErrorToast("No. Parte no contiene formato correcto");
+                            AlertHelper.showErrorToast("${labelText3} no contiene formato correcto");
                           }
                         },
-                        decoration: const InputDecoration(border: UnderlineInputBorder(), labelText: 'Parte Proveedor', suffixText: 'Escanea Número de Parte'),
+                        decoration: InputDecoration(border: UnderlineInputBorder(), labelText: labelText3, suffixText: 'Escanea Número de Parte'),
                       ),
                       TextFormField(
+                        //Master
                         controller: pMasterProviderTextController,
                         autofocus: true,
                         textInputAction: TextInputAction.next,
                         onTap: () => pMasterProviderTextController.selection = TextSelection(baseOffset: 0, extentOffset: pMasterProviderTextController.value.text.length),
                         onChanged: (val) async {
-                          if (val.length > 5 && val[0].toLowerCase() == 's') {
-                            ProgressBar.instance.show(context);
+                          ProgressBar.instance.show(context);
+
+                          var prefix = 's';
+                          if(isAKI){
+                            prefix = 'g';
+                          }
+
+                          if (val.length > 5 && val[0].toLowerCase() == prefix) {
                             pMasterProviderTextController.text = val.substring(1, val.length);
                             await ValidateMasterProviderOrder1();
                             await validateMaster();
-                            ProgressBar.instance.hide();
                           } else {
                             pMasterProviderTextController.text = "";
-                            AlertHelper.showErrorToast("Master no contiene formato correcto");
+                            AlertHelper.showErrorToast("${labelText4} no contiene formato correcto");
                           }
+                          ProgressBar.instance.hide();
                         },
-                        decoration: const InputDecoration(border: UnderlineInputBorder(), labelText: 'Master Proveedor', suffixText: 'Escanea Master'),
+                        decoration: InputDecoration(border: UnderlineInputBorder(), labelText: labelText4, suffixText: 'Escanea Master'),
                       ),
                       Text(""),
                       Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
