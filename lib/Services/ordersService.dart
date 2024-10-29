@@ -52,10 +52,12 @@ class OrdersService {
               customerName: singleOrder["customerName"],
               id: singleOrder["id"],
               lastScanDate: DateTime.parse(singleOrder["lastScanDate"] ?? DateTime.now().toString()),
-              currentScanInternalID: singleOrder["currentScanInternalID"].toString() ?? "",
+              currentScanInternalID: singleOrder["currentScanInternalID"].toString(),
               statusId: singleOrder["statusId"],
               status: singleOrder["status"],
               lastModifiedBy: singleOrder["lastModifiedBy"] ?? "",
+              validateManifest: singleOrder["validateManifest"],
+              validateWarehouse: singleOrder["validateWarehouse"],
               clientCode: singleOrder["clienteCode"]);
           orders.add(order);
         }
@@ -84,7 +86,7 @@ class OrdersService {
       });
       Map<String, dynamic> responseData = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        final List<String>? serials = (responseData["serials"] as List)?.cast<String>();
+        final List<String>? serials = (responseData["serials"] as List).cast<String>();
         order = Order(partNumber: responseData["partNumber"], internalPartNumber: responseData["partNumberInternal"], quantity: responseData["quantity"], serials: serials);
       } else {
         AlertHelper.showErrorToast("Error de conexión!!");
@@ -114,7 +116,7 @@ class OrdersService {
       });
       Map<String, dynamic> responseData = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        final List<String>? serials = (responseData["serials"] as List)?.cast<String>();
+        final List<String>? serials = (responseData["serials"] as List).cast<String>();
         order = Order(partNumber: responseData["partNumber"], internalPartNumber: responseData["partNumberInternal"], quantity: responseData["quantity"], serials: serials);
       } else {
         AlertHelper.showErrorToast("Error de conexión!!");
@@ -132,6 +134,32 @@ class OrdersService {
       AlertHelper.showErrorToast("Error de servidor!!");
     } finally {
       return order;
+    }
+  }
+
+  static Future<ResponseMessage> ValidateManifest(String manifest) async {
+    ResponseMessage responseMessage = ResponseMessage(hasError: true, message: "Error de conexión!!", extraData: "");
+    try {
+      String url = "${AppConfig.host}/Scan/ValidateManifest?manifest=${manifest}";
+      final response = await http.get(Uri.parse(url), headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      });
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = jsonDecode(response.body);
+        responseMessage = ResponseMessage(hasError: bool.parse('${responseData['hasError']}'), message: '${responseData['message']}', extraData: "");
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
+      }
+    } on SocketException {
+      AlertHelper.showErrorToast("Error de conexión!!");
+    } on HttpException {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } on FormatException {
+      AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } finally {
+      return responseMessage;
     }
   }
 
@@ -295,9 +323,9 @@ class OrdersService {
           OrderReport orderDetail = OrderReport(
             partNumber: singleOrder["partNumber"],
             description: singleOrder["description"],
-            quantityPlan: Decimal.parse(singleOrder["quantityPlan"].toString() ?? "0"),
-            quantityReal: Decimal.parse(singleOrder["quantityReal"].toString() ?? "0"),
-            quantityDiff: Decimal.parse(singleOrder["quantityDiff"].toString() ?? "0"),
+            quantityPlan: Decimal.parse(singleOrder["quantityPlan"].toString()),
+            quantityReal: Decimal.parse(singleOrder["quantityReal"].toString()),
+            quantityDiff: Decimal.parse(singleOrder["quantityDiff"].toString()),
           );
           orderDetails.add(orderDetail);
         }
@@ -335,7 +363,8 @@ class OrdersService {
             'user': CurrentUser.instance.user.idUser.toString(),
             'secondSerial': order.akiSerial,
             'partNumberProvider': order.partNumberProvider,
-            'masterProvider': order.masterProvider
+            'masterProvider': order.masterProvider,
+            'serialWarehouse': order.warehouseLabel
           }));
 
       if (response.statusCode == 200) {
@@ -357,7 +386,7 @@ class OrdersService {
     }
   }
 
-  static Future<ResponseMessage> syncOrder(int idScan) async {
+  static Future<ResponseMessage> syncOrder(int idScan, String manifest) async {
     ResponseMessage responseMessage = ResponseMessage(hasError: true, message: "Error de conexión!!", extraData: "");
     try {
       String url = "${AppConfig.host}/Scan/SyncOrder";
@@ -365,7 +394,7 @@ class OrdersService {
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },
-          body: jsonEncode(<String, String>{'idScan': idScan.toString(), 'idUser': CurrentUser.instance.user.idUser.toString()}));
+          body: jsonEncode(<String, String>{'idScan': idScan.toString(), 'idUser': CurrentUser.instance.user.idUser.toString(), 'manifest': manifest}));
 
       if (response.statusCode == 200) {
         Map<String, dynamic> responseData = jsonDecode(response.body);
@@ -423,7 +452,11 @@ class OrdersService {
       });
       if (response.statusCode == 200) {
         Map<String, dynamic> responseData = jsonDecode(response.body);
-        responseMessage = ResponseMessage(hasError: bool.parse('${responseData['hasError']}'), message: '${responseData['message']}', extraData: "");
+        responseMessage = ResponseMessage(
+            hasError: bool.parse('${responseData['hasError']}'),
+            message: '${responseData['message']}',
+            extraData: '${responseData['extraData']}'
+        );
       } else {
         AlertHelper.showErrorToast("Error de conexión!!");
       }
@@ -444,6 +477,32 @@ class OrdersService {
     ResponseMessage responseMessage = ResponseMessage(hasError: true, message: "Error de conexión!!", extraData: "");
     try {
       String url = "${AppConfig.host}/Scan/DeleteScanById?idScan=${idScan}&idUser=${CurrentUser.instance.user.idUser.toString()}";
+      final response = await http.get(Uri.parse(url), headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      });
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = jsonDecode(response.body);
+        responseMessage = ResponseMessage(hasError: bool.parse('${responseData['hasError']}'), message: '${responseData['message']}', extraData: "");
+      } else {
+        AlertHelper.showErrorToast("Error de conexión!!");
+      }
+    } on SocketException {
+      AlertHelper.showErrorToast("Error de conexión!!");
+    } on HttpException {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } on FormatException {
+      AlertHelper.showErrorToast("Error en el formato de salida!!");
+    } catch (e) {
+      AlertHelper.showErrorToast("Error de servidor!!");
+    } finally {
+      return responseMessage;
+    }
+  }
+
+  static Future<ResponseMessage> ValidateSerialWarehouse(String serial, String partNumber) async {
+    ResponseMessage responseMessage = ResponseMessage(hasError: true, message: "Error de conexión!!", extraData: "");
+    try {
+      String url = "${AppConfig.host}/Scan/ValidateSerialWarehouse?serial=${serial}&partNumber=${partNumber}";
       final response = await http.get(Uri.parse(url), headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       });

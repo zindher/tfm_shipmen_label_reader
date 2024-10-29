@@ -11,6 +11,7 @@ class OrderDetail {
   final String qty;
   final String partNumberProvider;
   final String masterProvider;
+  final String warehouseLabel;
 
   OrderDetail({
     required this.id,
@@ -23,5 +24,6 @@ class OrderDetail {
     required this.qty,
     this.partNumberProvider = "",
     this.masterProvider = "",
+    this.warehouseLabel = ""
   });
 }

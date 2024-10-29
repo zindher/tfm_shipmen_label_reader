@@ -80,6 +80,24 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         OrderDetail item = _orderDetails[index];
                         return Dismissible(
                           direction: DismissDirection.endToStart,
+                          confirmDismiss: (DismissDirection direction) async {
+                            return await showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text("Confirmar"),
+                                  content: const Text("¿Está seguro que desea eliminar este registro?"),
+                                  actions: <Widget>[
+                                    TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text("Borrar")),
+                                    TextButton(
+                                      onPressed: () => Navigator.of(context).pop(false),
+                                      child: const Text("Cancelar"),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
                           key: Key(item.partNumber),
                           onDismissed: (direction) async {
                             var a = await OrdersService.DeleteScanById(item.id);

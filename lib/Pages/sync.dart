@@ -16,12 +16,22 @@ class SyncPage extends StatefulWidget {
 }
 
 class _SyncPageState extends State<SyncPage> {
+  final manifestTextController = TextEditingController();
   int _optionsNumber = 1;
   int _finish = 0;
+  bool _isSpecialClient = false;
+  bool _isSpecialClientEnable = true;
 
   @override
   void initState() {
     super.initState();
+    if (widget.order.validateManifest) {
+      _isSpecialClient = true;
+      _finish = 1;
+    } else {
+      _isSpecialClient = false;
+      _finish = 0;
+    }
   }
 
   @override
@@ -59,6 +69,32 @@ class _SyncPageState extends State<SyncPage> {
                     ],
                   ),
                 ),
+                Visibility(
+                    visible: _isSpecialClient,
+                    child: TextFormField(
+                      controller: manifestTextController,
+                      enabled: _isSpecialClientEnable,
+                      autofocus: true,
+                      onChanged: (val) async {
+                        if (val.length == 10) {
+                          ProgressBar.instance.show(context);
+                          var a = await OrdersService.ValidateManifest(manifestTextController.text);
+                          if (!a.hasError) {
+                            setState(() {
+                              _isSpecialClientEnable = false;
+                              _finish = 0;
+                            });
+                            AlertHelper.showSuccessToast(a.message);
+                          } else {
+                            manifestTextController.text = "";
+                            AlertHelper.showErrorToast(a.message);
+                          }
+                          ProgressBar.instance.hide();
+                        } else {
+                        }
+                      },
+                      decoration: InputDecoration(border: UnderlineInputBorder(), labelText: 'Manifiesto'),
+                    )),
                 Text(""),
                 Visibility(
                     visible: _optionsNumber == 1,
@@ -90,14 +126,13 @@ class _SyncPageState extends State<SyncPage> {
                       Text("ERROR, CONTACTE A SISTEMAS", style: const TextStyle(fontSize: 16, color: Colors.red)),
                     ])),
                 Text(""),
-                Text(""),
                 Visibility(
                     visible: _finish == 0,
                     child: ElevatedButton(
                       style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Color(0xff052289))),
                       onPressed: () async => {
                         ProgressBar.instance.show(context),
-                        response = await OrdersService.syncOrder(await OrdersService.startScan(widget.order.id)),
+                        response = await OrdersService.syncOrder(await OrdersService.startScan(widget.order.id), manifestTextController.text),
                         if (!response.hasError)
                           {AlertHelper.showSuccessToast(response.message), _optionsNumber = 2, _finish = 1}
                         else

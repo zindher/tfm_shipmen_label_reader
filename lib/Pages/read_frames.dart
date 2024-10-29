@@ -19,6 +19,7 @@ class ReadFramesPage extends StatefulWidget {
 class _ReadFramesPageState extends State<ReadFramesPage> {
   ResponseMessage response = ResponseMessage(hasError: true, message: "", extraData: "");
   int _optionsNumber = 0;
+  bool _showWarehouseField = false;
 
   Order akiOrder = Order();
   Order order = Order();
@@ -35,6 +36,7 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
   final fPartNumberTextController = TextEditingController();
   final fSerialTextController = TextEditingController();
   final fAKISerialTextController = TextEditingController();
+  final warehouseLabelTextController = TextEditingController();
 
   final pMasterTextController = TextEditingController();
   final pMasterProviderTextController = TextEditingController();
@@ -156,12 +158,18 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
 
   Future<void> fSave() async {
     setState(() async {
+      var auxValidWarehouse = true;
+      if((widget.order.validateWarehouse && warehouseLabelTextController.text.length == 0)){
+        auxValidWarehouse = false;
+      }
       if (isAKI) {
         if (fPartNumberTextController.text.length > 5 &&
             int.parse(fQtyTextController.text) > 0 &&
             fSerialTextController.text.length > 5 &&
             fMasterTextController.text.length > 5 &&
-            fAKISerialTextController.text.length > 5) {
+            fAKISerialTextController.text.length > 5 &&
+            auxValidWarehouse
+        ) {
           response = await OrdersService.saveOrderContent(OrderDetail(
               id: widget.order.id,
               partNumber: fPartNumberTextController.text,
@@ -183,13 +191,18 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
           FocusScope.of(context).previousFocus();
           FocusScope.of(context).previousFocus();
           FocusScope.of(context).previousFocus();
+          if(widget.order.validateWarehouse){
+            FocusScope.of(context).previousFocus();
+          }
           AlertHelper.showErrorToast('Datos incorrectos revisalos!!');
         }
       } else {
         if (fPartNumberTextController.text.length > 5 &&
             int.parse(fQtyTextController.text) > 0 &&
             fSerialTextController.text.length > 5 &&
-            fMasterTextController.text.length > 5) {
+            fMasterTextController.text.length > 5&&
+            auxValidWarehouse
+        ) {
           response = await OrdersService.saveOrderContent(OrderDetail(
               id: widget.order.id,
               partNumber: fPartNumberTextController.text,
@@ -198,7 +211,9 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
               master: fMasterTextController.text,
               date: null,
               akiSerial: fAKISerialTextController.text,
-              qty: ""));
+              qty: "",
+              warehouseLabel: warehouseLabelTextController.text
+          ));
           if (!response.hasError) {
             fCleanFields();
             AlertHelper.showSuccessToast(response.message);
@@ -211,6 +226,9 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
           FocusScope.of(context).previousFocus();
           FocusScope.of(context).previousFocus();
           FocusScope.of(context).previousFocus();
+          if(widget.order.validateWarehouse){
+            FocusScope.of(context).previousFocus();
+          }
           AlertHelper.showErrorToast('Datos incorrectos revisalos!!');
         }
       }
@@ -218,11 +236,18 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
   }
 
   Future<void> pSave() async {
+    var auxValidWarehouse = true;
+    if((widget.order.validateWarehouse && warehouseLabelTextController.text.length == 0)){
+      auxValidWarehouse = false;
+    }
+
     if (pPartNumberTextController.text.length > 5 &&
         pPartNumberProviderTextController.text.length > 5 &&
         int.parse(pQtyTextController.text) > 0 &&
         pMasterTextController.text.length > 5 &&
-        pMasterProviderTextController.text.length > 5) {
+        pMasterProviderTextController.text.length > 5 &&
+        auxValidWarehouse
+    ) {
       response = await OrdersService.saveOrderContent(OrderDetail(
           id: widget.order.id,
           partNumber: pPartNumberTextController.text,
@@ -233,7 +258,9 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
           akiSerial: "",
           qty: "",
           partNumberProvider: pPartNumberProviderTextController.text,
-          masterProvider: pMasterProviderTextController.text));
+          masterProvider: pMasterProviderTextController.text,
+          warehouseLabel: warehouseLabelTextController.text
+      ));
       if (!response.hasError) {
         pCleanFields();
         AlertHelper.showSuccessToast(response.message);
@@ -287,10 +314,10 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
   }
 
   Future<void> validateMaster() async {
-        if (pPartNumberTextController.text.length > 5 &&
-            pPartNumberProviderTextController.text.length > 5 &&
-            pMasterProviderTextController.text.length > 5 &&
-            pMasterTextController.text.length > 5) {
+    if (pPartNumberTextController.text.length > 5 &&
+        pPartNumberProviderTextController.text.length > 5 &&
+        pMasterProviderTextController.text.length > 5 &&
+        pMasterTextController.text.length > 5) {
       response = await OrdersService.validateMaster(pPartNumberTextController.text, pPartNumberProviderTextController.text);
       if (response.hasError) {
         pPartNumberProviderTextController.text = "";
@@ -311,6 +338,11 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
     fAKISerialTextController.text = "";
     originText = "";
 
+    if(widget.order.validateWarehouse){
+      warehouseLabelTextController.text = "";
+      FocusScope.of(context).previousFocus();
+    }
+
     FocusScope.of(context).previousFocus();
     FocusScope.of(context).previousFocus();
     FocusScope.of(context).previousFocus();
@@ -323,6 +355,11 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
     pPartNumberTextController.text = "";
     pPartNumberProviderTextController.text = "";
     pMasterProviderTextController.text = "";
+
+    if(widget.order.validateWarehouse){
+      warehouseLabelTextController.text = "";
+      FocusScope.of(context).previousFocus();
+    }
 
     FocusScope.of(context).previousFocus();
     FocusScope.of(context).previousFocus();
@@ -445,6 +482,9 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                               AlertHelper.showErrorToast(a.message);
                               fAKISerialTextController.text = '';
                             } else {
+                              setState(() {
+                                _showWarehouseField = bool.parse(a.extraData);
+                              });
                               if (isAKI) {
                                 if (fPartNumberTextController.text == akiOrder.partNumber) {
                                   FocusScope.of(context).nextFocus();
@@ -465,11 +505,41 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                             ProgressBar.instance.hide();
                           } else {
                             fPartNumberTextController.text = "";
+                            setState(() {
+                              _showWarehouseField = false;
+                            });
                             AlertHelper.showErrorToast("${labelText1} no contiene formato correcto");
                           }
                         },
                         decoration: InputDecoration(border: UnderlineInputBorder(), labelText: labelText1, suffixText: labelText2),
                       ),
+                      Visibility(
+                          visible: widget.order.validateWarehouse && _showWarehouseField,
+                          child: Column(children: <Widget>[
+                            TextFormField(
+                              controller: warehouseLabelTextController,
+                              autofocus: true,
+                              textInputAction: TextInputAction.next,
+                              onTap: () => warehouseLabelTextController.selection = TextSelection(baseOffset: 0, extentOffset: warehouseLabelTextController.value.text.length),
+                              onChanged: (val) async {
+                                if (val.length > 5) {
+                                  response = await OrdersService.ValidateSerialWarehouse(warehouseLabelTextController.text, fPartNumberTextController.text);
+                                  if(!response.hasError){
+                                    FocusScope.of(context).nextFocus();
+                                  }
+                                  else{
+                                    warehouseLabelTextController.text = "";
+                                    AlertHelper.showErrorToast(response.message);
+                                  }
+                                } else {
+                                  warehouseLabelTextController.text = "";
+                                  AlertHelper.showErrorToast("etiqueta no valida");
+                                }
+                              },
+                              decoration: const InputDecoration(border: UnderlineInputBorder(), labelText: 'Etiqueta Warehouse', suffixText: 'Escanea Etiqueta Warehouse'),
+                            ),
+                            Text(""),
+                          ])),
                       TextFormField(
                         controller: fSerialTextController,
                         textInputAction: TextInputAction.next,
@@ -501,7 +571,7 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                             }
                             originText = val;
                             ProgressBar.instance.hide();
-                          } catch (exception, stack) {
+                          } catch (exception) {
                             originText = val;
                             ProgressBar.instance.hide();
                           }
@@ -620,7 +690,7 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                         controller: pPartNumberProviderTextController,
                         textInputAction: TextInputAction.next,
                         onTap: () =>
-                            pPartNumberProviderTextController.selection = TextSelection(baseOffset: 0, extentOffset: pPartNumberProviderTextController.value.text.length),
+                        pPartNumberProviderTextController.selection = TextSelection(baseOffset: 0, extentOffset: pPartNumberProviderTextController.value.text.length),
                         onChanged: (val) async {
                           if (val.length > 5 && val[0].toLowerCase() == 'p') {
                             //validar numero de parte pendinte voy a mandar numero de parte y parte provedor
@@ -635,6 +705,33 @@ class _ReadFramesPageState extends State<ReadFramesPage> {
                         },
                         decoration: InputDecoration(border: UnderlineInputBorder(), labelText: labelText3, suffixText: 'Escanea Número de Parte'),
                       ),
+                      Visibility(
+                          visible: false,
+                          child: Column(children: <Widget>[
+                            TextFormField(
+                              controller: warehouseLabelTextController,
+                              autofocus: true,
+                              textInputAction: TextInputAction.next,
+                              onTap: () => warehouseLabelTextController.selection = TextSelection(baseOffset: 0, extentOffset: warehouseLabelTextController.value.text.length),
+                              onChanged: (val) async {
+                                if (val.length > 5) {
+                                  response = await OrdersService.ValidateSerialWarehouse(warehouseLabelTextController.text, "");
+                                  if(!response.hasError){
+                                    FocusScope.of(context).nextFocus();
+                                  }
+                                  else{
+                                    warehouseLabelTextController.text = "";
+                                    AlertHelper.showErrorToast(response.message);
+                                  }
+                                } else {
+                                  warehouseLabelTextController.text = "";
+                                  AlertHelper.showErrorToast("etiqueta no valida");
+                                }
+                              },
+                              decoration: const InputDecoration(border: UnderlineInputBorder(), labelText: 'Etiqueta Warehouse', suffixText: 'Escanea Etiqueta Warehouse'),
+                            ),
+                            Text(""),
+                          ])),
                       TextFormField(
                         //Master
                         controller: pMasterProviderTextController,

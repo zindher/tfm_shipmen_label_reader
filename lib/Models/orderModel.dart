@@ -11,6 +11,8 @@ class Order {
   final String clientCode;
   final int? quantity;
   final List<String>? serials;
+  final bool validateManifest;
+  final bool validateWarehouse;
 
   Order({
     this.customerName = '',
@@ -24,7 +26,9 @@ class Order {
     this.internalPartNumber = '',
     this.quantity = null,
     this.serials = null,
-    this.clientCode = ''
+    this.clientCode = '',
+    this.validateManifest = false,
+    this.validateWarehouse = false
   });
 
 }
